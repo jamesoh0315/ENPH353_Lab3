@@ -9,6 +9,12 @@ class Circle_Driver_Node(Node):
    def __init__(self):
        super().__init__(node_name='driver_node')
        # TODO Add code to drive in circles here
+       self.publisher_ = self.create_publisher(msg_type=Twist,topic='/cmd_vel',qos_profile=1)
+       time.sleep(1.0)
+       self.move = Twist()
+       self.move.linear.x = 0.5
+       self.move.angular.z = 0.3
+       self.publisher_.publish(msg=self.move)
        # END
 
 def main(args=None):

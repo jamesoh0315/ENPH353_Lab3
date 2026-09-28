@@ -63,7 +63,32 @@
     </link>
 
     <!--TODO Adding wheels links - add "right_wheel_link" and "left_wheel_link" here-->
-    
+    <xacro:macro name="wheel_link" params="prefix">
+        <link name="${prefix}_wheel_link">
+
+            <xacro:cylinder_inertia m="1.0" r="${wheel_radius}" l="${wheel_length}"
+                            o_xyz="0 0 0" o_rpy="${pi/2} 0 0"/>
+
+            <visual>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+            <material name="yellow"/>
+            </visual>
+
+            <collision>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+            </collision>
+
+        </link>
+    </xacro:macro>
+
+    <xacro:wheel_link prefix="right"/>
+    <xacro:wheel_link prefix="left" />
     <!-- End Adding wheels links -->
 
     <link name="caster_wheel_link">
@@ -94,7 +119,17 @@
     </joint>
 
     <!-- TODO Adding wheels joints - add a joint to the base_link for each wheel-->
-    
+    <xacro:macro name="wheel_joint" params="prefix reflect">
+        <joint name="${prefix}_wheel_joint" type="continuous">
+            <parent link="base_link"/>
+            <child link="${prefix}_wheel_link"/>
+            <axis xyz="0 1 0"/>
+            <origin xyz="${-base_length / 2.0 + wheel_radius} ${reflect * (base_width + wheel_length) / 2.0} 0" rpy="0 0 0"/>
+        </joint>
+    </xacro:macro>
+
+    <xacro:wheel_joint prefix="right" reflect="-1"/>
+    <xacro:wheel_joint prefix="left" reflect="1"/>
     <!-- End Adding wheels joints -->
 
     <joint name="base_caster_wheel_joint" type="fixed">
@@ -126,5 +161,22 @@
         </plugin>
     </gazebo>
 
+    <!-- TODO Adding differential drive -->
+    <gazebo>
+        <plugin filename="gz-sim-diff-drive-system"
+                name="gz::sim::systems::DiffDrive">
+
+            <left_joint>left_wheel_joint</left_joint>
+            <right_joint>right_wheel_joint</right_joint>
+
+            <wheel_separation>${base_width + wheel_length}</wheel_separation>
+            <wheel_radius>${wheel_radius}</wheel_radius>
+
+            <odom_publish_frequency>50</odom_publish_frequency>
+            <topic>cmd_vel</topic>
+
+        </plugin>
+    </gazebo>
+    <!-- End Adding differential drive -->
 
 </robot>
